@@ -11,6 +11,7 @@ MacOS and Linux: g++
 ```
 
 easy, just cd where you downloaded/cloned the repo then write 'make (target)'. 
+
 targets available: 
 ```
 macos
