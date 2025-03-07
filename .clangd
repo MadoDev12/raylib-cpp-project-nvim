@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-std=c++11]
+  Add: [-I/home/<user>/raylib/src, -L/home/<user>/src, -lraylib] 

@@ -1,48 +1,40 @@
+UNAME_S := $(shell uname -s)
 
-# Compiler settings
-CXX := g++
-CXXFLAGS := -std=c++11 -Wall -Wextra -Iinclude
-SRCDIR := src
-BUILD_DIR := build
-SOURCES := $(wildcard $(SRCDIR)/**/*.cpp) $(wildcard $(SRCDIR)/*.cpp)
-OBJS := $(patsubst $(SRCDIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
-LDFLAGS := -std=c++11 -lraylib -lm
+# Compiler
+CXX = g++
+
+# Source Files
+SRC = src/main.cpp
+
+# Output Binary
+OUT = bin/template
+
+# Default Raylib Path
+RAYLIB_INCLUDE = -I$(HOME)/raylib/src
+RAYLIB_LIB = -L$(HOME)/raylib/src -lraylib
+
+# Compiler Flags
+CXXFLAGS = -Wall -std=c++17 $(RAYLIB_INCLUDE)
+LDFLAGS = $(RAYLIB_LIB)
 
 # Platform-specific settings
-OS := $(shell uname)
-
-ifeq ($(OS), Darwin)  # macOS
-    TARGET := game-macos
-    LDFLAGS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
-else ifeq ($(OS), Linux)  # Linux
-    TARGET := game-linux
-    LDFLAGS += -lGL -lGLU -lX11
-else
-    TARGET := game  # Default
+ifeq ($(UNAME_S), Linux)
+    LDFLAGS += -lGL -lm -lpthread -ldl -lrt -lX11
 endif
 
-# Windows compilation
-WINDOWS_CXX := x86_64-w64-mingw32-g++
-WINDOWS_LDFLAGS := -lraylib -lopengl32 -lgdi32 -lwinmm
-WINDOWS_TARGET := game.exe
+ifeq ($(UNAME_S), Darwin)  # macOS
+    LDFLAGS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+endif
 
-# Rules
-all: linux  # Default to Linux
+ifeq ($(OS), Windows_NT)  # Windows
+    RAYLIB_LIB = -L$(HOME)/raylib/src -lraylib -lopengl32 -lgdi32 -lwinmm
+endif
 
-$(BUILD_DIR)/%.o: $(SRCDIR)/%.cpp
-	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+# Build
+all:
+	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT) $(LDFLAGS)
 
-linux: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET) $(LDFLAGS)
-
-macos: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET) $(LDFLAGS)
-
-windows: $(OBJS)
-	$(WINDOWS_CXX) $(CXXFLAGS) $(OBJS) -o $(WINDOWS_TARGET) $(WINDOWS_LDFLAGS)
-
+# Clean
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET) $(WINDOWS_TARGET)
+	rm -f $(OUT)
 
-.PHONY: all linux macos windows clean
